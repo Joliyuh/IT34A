@@ -1,11 +1,4 @@
 <?php
-
-function redirect($path){
-    header("Location: ".BASE_URL.$path);
-    exit;
-}
-
-
 function loginUser($pdo, $login, $password){
 
     $sql = "
@@ -46,6 +39,10 @@ function loginUser($pdo, $login, $password){
     $_SESSION['user_username'] = $user['user_username'];
     $_SESSION['user_role'] = $user['user_role'];
 
+
+    //Initialize session in database
+    $_SESSION['session_id'] = startSession($pdo);
+    
     return true;
 }
 
@@ -66,6 +63,4 @@ function requireRole($role){
         die("Access Denied");
     }
 }
-
-?>
 
