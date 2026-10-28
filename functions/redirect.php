@@ -6,4 +6,3 @@ function redirect($path){
 }
 
 ?>
-
