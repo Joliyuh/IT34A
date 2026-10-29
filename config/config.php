@@ -9,7 +9,7 @@ require_once(__DIR__ . '/../functions/session.php');
 
 //define('', '');
 
-define('BASE_URL','http://localhost/IT34A');
+define('BASE_URL','http://localhost/IT34A-1');
 
 define('DB_HOST','localhost');
 define('DB_NAME','it34a_lab_db');
