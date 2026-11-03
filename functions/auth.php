@@ -19,12 +19,7 @@ function loginUser($pdo, $login, $password){
 
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // TEMPORARY TEST
-    echo "<pre>";
-    var_dump($login);
-    var_dump($password);
-    var_dump($user);
-    echo "</pre>";
+    
 
     if(!$user){
         return false;
@@ -58,6 +53,8 @@ function requireLogin(){
         header('Location: '.BASE_URL.'/index.php');
         exit;
     }
+
+    checkSessionTimeout();
 }
 
 function requireRole($role){
