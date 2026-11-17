@@ -1,21 +1,29 @@
 <?php
-
-require_once '../../config/config.php';
-
+require_once __DIR__ . '/../../config/config.php';
 
 requireRole('admin');
 
-logActivity(
-    $pdo,
-    $_SESSION['user_id'],
-    $_SESSION['user_email'],
-    'view_activity_logs'
-);
+$section = $_GET['section'] ?? 'activity-logs';
+$action = $_GET['action'] ?? '';
 
-//  Get All Activity Logs
 
+
+
+
+#query
 $stmt = $pdo->query("
-    SELECT
+SELECT * 
+FROM activity_logs
+ORDER BY activity_log_created_at DESC
+
+");
+
+$activities =$stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if($action == 'export') {
+    if($section == 'activity-logs') {
+       $stmt = $pdo->query("
+            SELECT
         activity_log_id,
         user_id,
         user_email,
@@ -24,47 +32,59 @@ $stmt = $pdo->query("
         activity_log_ip_address,
         activity_log_user_agent,
         activity_log_created_at
-
     FROM activity_logs
-
     ORDER BY activity_log_created_at DESC
 ");
 
-$activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+       $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+       logActivity(
+   $pdo,
+   $_SESSION['user_id'],
+     $_SESSION['user_email'],
+    'export_activity_logs',
+    'success',
+);
+
+exportCsv(
+    'activity_logs',
+    [
+        'Record ID', 'User ID', 'User Email', 'Action',
+         'Status', 'IP Address', 'User Agent', 'Date & Time'
+        
+    ],
+
+    $rows
+);
+
+       
+}
+}
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-
-    <title>Activity Logs</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
 </head>
-
 <body>
+    <h1> Hellow ADmin</h1>
 
-    <h1>Activity Logs</h1>
+    <a href="../auth/signout.php">Sign out</a>
 
-    <p>
-        <a href="<?= BASE_URL ?>/auth/signout.php">Sign Out</a>
-    </p>
+    <?php if($section === 'activity-logs'): ?>
 
-
-    <table border="1">
+        <h4>Activity Logs
+            <a href="index.php?section=activity-logs&amp;action=export">Export to CSV</a>
+        </h4>
+        
+        <table id="example" class="table table-striped" style="width:auto">
 
         <thead>
-
             <tr>
-                <th>ID</th>
+                <th>Record ID</th>
                 <th>User ID</th>
                 <th>Email</th>
                 <th>Action</th>
@@ -72,18 +92,12 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>IP Address</th>
                 <th>User Agent</th>
                 <th>Date & Time</th>
-            </tr>
-
-        </thead>
-
-
-        <tbody>
-
-            <?php foreach ($activities as $activity): ?>
-
-                <tr>
-
-                    <td>
+</tr>
+</thead>
+<tbody>
+        <?php foreach($activities as $activity): ?>
+            <tr>
+                 <td>
                         <?= htmlspecialchars(
                             $activity['activity_log_id']
                         ) ?>
@@ -124,21 +138,18 @@ $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             $activity['activity_log_user_agent']
                         ) ?>
                     </td>
-
                     <td>
                         <?= htmlspecialchars(
                             $activity['activity_log_created_at']
                         ) ?>
                     </td>
 
-                </tr>
+            </tr>
+<?php endforeach; ?>
+ <?php endif; ?>
 
-            <?php endforeach; ?>
-
-        </tbody>
-
-    </table>
+</tbody>
+</table>
 
 </body>
-
 </html>
