@@ -1,4 +1,5 @@
 <?php
+
 function loginUser($pdo, $login, $password){
 
     $sql = "
@@ -19,8 +20,6 @@ function loginUser($pdo, $login, $password){
 
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    
-
     if(!$user){
         return false;
     }
@@ -29,8 +28,8 @@ function loginUser($pdo, $login, $password){
         return false;
     }
 
-    //Check if user has an active session
-    if(hasActiveSession($pdo, $user['user_id'])){
+    // Check if user has an active session
+    if(hasActiveUserSession($pdo, $user['user_id'])){
         return 'active_session';
     }
 
@@ -39,12 +38,12 @@ function loginUser($pdo, $login, $password){
     $_SESSION['user_username'] = $user['user_username'];
     $_SESSION['user_role'] = $user['user_role'];
 
+    // Initialize session in database
+    $_SESSION['session_id'] = startUserSession($pdo);
 
-    //Initialize session in database
-    $_SESSION['session_id'] = startSession($pdo);
-    
     return true;
 }
+
 
 
 

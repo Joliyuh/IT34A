@@ -1,70 +1,61 @@
+<?php 
 
-<?php
-
-// Start User Session
-function startSession($pdo)
-{
-    if (!isset($_SESSION['user_id'])) {
+// Start user session
+function startUserSession($pdo){
+    
+    if(!isset($_SESSION['user_id'])){
         return false;
     }
 
     $user_id = $_SESSION['user_id'];
 
     $stmt = $pdo->prepare("
-        INSERT INTO user_sessions (
+        INSERT INTO user_sessions(
             user_id,
             session_start
         ) VALUES (
             :user_id,
             NOW()
         )
+    
     ");
 
     $stmt->execute([
-        'user_id' => $user_id,
+        ':user_id' => $user_id
     ]);
 
     return $pdo->lastInsertId();
 }
-
-// End User Session
-function endSession($pdo)
-{
-    if (
-        !isset($_SESSION['user_id']) ||
-        !isset($_SESSION['session_id'])
-    ) {
-        return false;
-    }
+function endUserSession($pdo){
 
     $session_id = $_SESSION['session_id'];
 
     $stmt = $pdo->prepare("
         UPDATE user_sessions
         SET
-            session_end = NOW(),
-            session_duration = TIMESTAMPDIFF(
+            session_end=NOW(),
+            session_duration=TIMESTAMPDIFF(
                 SECOND,
                 session_start,
                 NOW()
             )
         WHERE session_id = :session_id
-          AND session_end IS NULL
     ");
 
     return $stmt->execute([
         'session_id' => $session_id
     ]);
+
 }
 
-// Check User for Active Session
-function hasActiveSession($pdo, $user_id)
-{
+
+// Function check user for active session
+function hasActiveUserSession($pdo, $user_id){
     $stmt = $pdo->prepare("
         SELECT session_id
         FROM user_sessions
         WHERE user_id = :user_id
-          AND session_end IS NULL
+        AND session_end IS NULL
         LIMIT 1
     ");
 
@@ -76,40 +67,45 @@ function hasActiveSession($pdo, $user_id)
 }
 
 // Session Timeout
-function checkSessionTimeout()
-{
+function checkSessionTimeout(){
     global $pdo;
 
-    // 10 seconds of inactivity
+    // Timeout Setings
+
+    // 10s for testing
+
+    // 1800s for 30min session time
+
     $timeout = 10;
 
-    // Check Last Activity
-    if (isset($_SESSION['last_activity'])) {
+    // Check last  activity
+    if(isset($_SESSION['last_activity'])){
 
-        $inactive = time() - $_SESSION['last_activity'];
+    $inactive = time() - $_SESSION['last_activity'];
 
-        if ($inactive >= $timeout) {
-
-            // End Database Session
-            if (isset($_SESSION['session_id'])) {
-                endSession($pdo);
-            }
+        if($inactive >= $timeout){
+            // En database connection
+            endUserSession($pdo);
 
             // Destroy PHP Session
-            $_SESSION = [];
+            session_unset();
+            session_destroy();
 
-            if (session_status() === PHP_SESSION_ACTIVE) {
-                session_destroy();
-            }
+            // Redirect
+            header(
+                'Location: ' .
+                BASE_URL.
+                '/index.php?timeout=1'
 
-            // Redirect to Login Page
-            header('Location: ' . BASE_URL . '/index.php?timeout=1');
-            exit();
+            );
+            
+            exit;
+            
         }
     }
-
-    // Update Last Activity
+// Update last activity time
     $_SESSION['last_activity'] = time();
+
 }
 
 ?>

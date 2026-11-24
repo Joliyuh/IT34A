@@ -70,7 +70,7 @@ exportCsv(
     <title>Document</title>
 </head>
 <body>
-    <h1> Hellow ADmin</h1>
+    <h1> Welcome, Admin!</h1>
 
     <a href="../auth/signout.php">Sign out</a>
 
