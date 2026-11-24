@@ -7,6 +7,7 @@ require_once(__DIR__ . '/../functions/redirect.php');
 require_once(__DIR__ . '/../functions/csrf.php');
 require_once(__DIR__ . '/../functions/csv.php');
 
+require_once(__DIR__ . '/../vendor/autoload.php');
 
 //define('', '');
 
